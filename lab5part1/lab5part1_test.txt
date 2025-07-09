@@ -1,0 +1,6 @@
+hello
+{"mtype":"ping","value":10
+{"value":10}
+{"mtype":"pling","value":10}
+{"mtype":"ping"}
+{"mtype":"ping","value": "hello"}

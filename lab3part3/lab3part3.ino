@@ -43,6 +43,7 @@ int g_servo_position_deg = 0;                 // Current servo angle
 int g_servo_direction_deg = 1;                // Current servo sweep direction
 int g_led_state = LOW;                        // LED ON/OFF state
 ProgramState g_program_state = STATE_STOPPED; // Initial FSM state
+String g_cmd = "";                            // Serial command buffer
 
 void setup()
 {
@@ -62,7 +63,6 @@ void loop()
 {
     // Static variables that persist across loop calls
     static int s_last_print_time_ms = 0;      // Tracks time of last print
-    static String s_cmd = "";                 // Serial command buffer
     static bool s_button_was_pressed = false; // Button debounce tracking
 
     int current_time_ms = millis();
@@ -80,26 +80,30 @@ void loop()
         char c = Serial.read();
         if (c == '\n' || c == '\r')
         {
-            s_cmd.toLowerCase();
-            Serial.printf("command: '%s'\n", s_cmd.c_str());
 
-            if (s_cmd == "start")
+            if (g_cmd.isEmpty())
+                return;
+
+            g_cmd.toLowerCase();
+            Serial.printf("command: '%s'\n", g_cmd.c_str());
+
+            if (g_cmd == "start")
             {
                 g_program_state = STATE_RUN;
             }
-            else if (s_cmd == "stop")
+            else if (g_cmd == "stop")
             {
                 g_program_state = STATE_STOPPING;
             }
             else
             {
-                Serial.printf("unrecognized command: '%s'\n", s_cmd.c_str());
+                Serial.printf("unrecognized command: '%s'\n", g_cmd.c_str());
             }
-            s_cmd = "";
+            g_cmd = "";
         }
         else
         {
-            s_cmd.concat(c);
+            g_cmd.concat(c);
         }
     }
 
@@ -113,7 +117,7 @@ void loop()
     {
         if (s_button_was_pressed)
         {
-            switch (g_program_state)
+            switch (g_program_state)    
             {
             case STATE_STOPPED:
                 g_program_state = STATE_RUN;
